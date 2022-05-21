@@ -7,6 +7,7 @@ Stock movements in the simulations are modeled with geometric brownian motion eq
 
 ### Notes
 API key is from https://site.financialmodelingprep.com. To use your own API key, you can delete/comment out the "Open and Close" codes and set apiKey = 'Your-API-Key'.
+Here is a guide to all the different API calls you can make: https://site.financialmodelingprep.com/developer/docs
 
 ### Sources
 https://www.investopedia.com/articles/07/montecarlo.asp
