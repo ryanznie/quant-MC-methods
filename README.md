@@ -11,3 +11,8 @@ Here is a guide to all the different API calls you can make: https://site.financ
 
 ### Sources
 https://www.investopedia.com/articles/07/montecarlo.asp
+
+### UPDATES:
+
+#### 1. 06/17/2022
+financialmodelingprep.com seems to not offer historical daily data for free anymore. I am working on a new version.
