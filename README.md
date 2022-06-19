@@ -3,7 +3,7 @@ Stock Price Predictions Using Monte Carlo Methods
 
 ### How to use
 To run simulations, enter in ticker name and desired arguments into "simulate()", "compare_times()", or "compare_stocks()". 
-Stock movements in the simulations are modeled with geometric brownian motion equations. The parameters are extracted from historical data (5 years if mature stock or lifetime if new stock). The model follows efficient market hypothesis, and assumes that stock movements are random walks.
+Stock movements in the simulations are modeled with geometric Brownian motion equations. The parameters are extracted from historical data (Version I: 5 years if mature stock or lifetime if new stock; Version II: ). The model follows efficient market hypothesis, and assumes that stock movements are random walks.
 
 ## Version II (06/2022)
 
