@@ -7,7 +7,9 @@ Stock movements in the simulations are modeled with geometric brownian motion eq
 
 ## Version II (06/2022)
 
-Data is imported via the yfinance library. To install the library, use *!pip install yfinance* in your notebook or terminal. Please refer to https://pypi.org/project/yfinance/ for any questions or concerns.
+Data is now imported via the yfinance library. To install the library, use *!pip install yfinance* in your notebook or terminal. Please refer to https://pypi.org/project/yfinance/ for any questions or concerns. 
+
+Simulation functions can now also take in arguments for beginning and ending time of historical prices.
 
 ## Version I (05/2022)
 
@@ -16,7 +18,7 @@ API key is from https://site.financialmodelingprep.com. To use your own API key,
 ## UPDATES:
 
 ### II. 06/18/2022
-Version II added. It uses yfinance library from Yahoo Finance instead of an API key from financialmodelingprep.com. Function docstrings are also updated to improve readability.
+Version II added. It uses yfinance library from Yahoo Finance instead of an API key from financialmodelingprep.com. Function docstrings are also updated to improve readability. Historical time frame for data is now flexible for users to choose.
 
 ### I. 06/17/2022
 financialmodelingprep.com seems to not offer historical daily data for free anymore. I am working on a new version.
