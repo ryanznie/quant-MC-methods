@@ -18,10 +18,18 @@ conda activate quant-mc
 ```
 
 ## How to use
+
+**1. Command Line**
+
+TBD
+
+**2. Notebooks**
+
 To run simulations, enter in ticker name and desired arguments into `simulate()`, `compare_times()`, or `compare_stocks()`. 
 Stock movements in the simulations are modeled with geometric Brownian motion equations. The parameters are extracted from historical data (Version I: 5 years if mature stock or lifetime if new stock; Version II: Defaults from '2020-01-01' to most recent market). The model follows efficient market hypothesis, and assumes that stock movements are random walks.
 
-## Version History
+## Notebook Version History
+
 ### Version III (11/2022)
 
 Changed codes to object oriented.
