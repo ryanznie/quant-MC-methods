@@ -19,11 +19,24 @@ conda activate quant-mc
 
 ## How to use
 
-**1. Command Line**
+### Command Line
 
-TBD
+Within quant-MC-methods, 
+```
+python scripts/mc.py --action 
+```
 
-**2. Notebooks**
+Here are a few examples:
+1. To plot time series: 
+```
+python scripts/mc.py --action plot_ts
+```
+2. To fetch data and print mu and std of returns between 01-20-2020 and 03-01-2021:
+```
+python scripts/mc.py --action fetch_data --start 2020-01-20 --end 2021-03-01
+```
+
+### Notebooks
 
 To run simulations, enter in ticker name and desired arguments into `simulate()`, `compare_times()`, or `compare_stocks()`. 
 Stock movements in the simulations are modeled with geometric Brownian motion equations. The parameters are extracted from historical data (Version I: 5 years if mature stock or lifetime if new stock; Version II: Defaults from '2020-01-01' to most recent market). The model follows efficient market hypothesis, and assumes that stock movements are random walks.
