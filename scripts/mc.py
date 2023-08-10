@@ -7,6 +7,7 @@ import yfinance as yf
 from datetime import datetime
 import os
 import argparse
+from argparse import RawTextHelpFormatter
 from utils import setup_logger
 
 
@@ -20,7 +21,7 @@ def monte_carlo(args):
     if args.action == 'fetch_data':
         fetch_data(args.ticker, args.start, args.end)
     elif args.action == 'plot_ts':
-        plot_ts(args.ticker, args.start, args.end, args.output_dir)
+        plot_ts(args.ticker, args.start, args.end, args.output_dir, args.no_returns_plot)
     elif args.action == 'simulate':
         simulate(args.ticker, args.start, args.end, args.time, args.output_dir)
     elif args.action == 'compare_times':
@@ -61,9 +62,10 @@ def fetch_data(ticker, time_start, time_end, calc_mu_std=True):
     return (df, (mu, std))
 
 
-def plot_ts(ticker, time_start, time_end, output_dir): # , plot_returns=True
+def plot_ts(ticker, time_start, time_end, output_dir, no_returns_plot):
     """
     Fetches data and plots time series of a ticker in a specific time frame
+    OPTIONAL: plot histogram of returns, default plot returns
     Stores plots in output_dir in format {ticker}_S{YYYYMMDD}E{YYYYMMDD}.png
     """
     logger.info(f"PLOTTING TICKER: {ticker} from {time_start} to {time_end}")
@@ -76,28 +78,40 @@ def plot_ts(ticker, time_start, time_end, output_dir): # , plot_returns=True
     logger.info(f"Start price: ${df.iloc[0]['Close']} ({time_start})")
     logger.info(f"End price: ${df.iloc[-1]['Close']} ({time_end})")
     logger.info("---------------------------------------------")
-    fig, axes = plt.subplots(1, 2, figsize=(12,4))
-    plt.suptitle(f"{ticker} from {time_start} to {time_end}")
 
-    # Plot time series
-    axes[0].plot(df['Close'])
-    axes[0].set_xlabel("Dates")
-    axes[0].set_ylabel("Price (USD)")
-    axes[0].set_title(f"Time series")
-    fig.autofmt_xdate()
+    if not no_returns_plot:
+        fig, axes = plt.subplots(1, 2, figsize=(12,4))
+        plt.suptitle(f"{ticker} from {time_start} to {time_end}")
 
-    # Plot histogram of returns
-    axes[1].hist(df['return'], bins='auto')
-    axes[1].set_xlabel("Returns")
-    axes[1].set_ylabel("Frequency")
-    axes[1].set_title("Histogram of returns")
-    
-    ## histogram density = True
-    locs = axes[1].get_yticks() 
-    tick_labels = [f"{loc/len(df['return']):.3f}" for loc in locs]
-    axes[1].set_yticks(locs);
-    axes[1].set_yticklabels(tick_labels);
+        # Plot time series
+        axes[0].plot(df['Close'])
+        axes[0].set_xlabel("Dates")
+        axes[0].set_ylabel("Price (USD)")
+        axes[0].set_title(f"Time series")
+        
+        # Plot histogram of returns
+        axes[1].hist(df['return'], bins='auto')
+        axes[1].set_xlabel("Returns")
+        axes[1].set_ylabel("Frequency")
+        axes[1].set_title("Histogram of returns")
+        
+        ## histogram density = True
+        locs = axes[1].get_yticks() 
+        tick_labels = [f"{loc/len(df['return']):.3f}" for loc in locs]
+        axes[1].set_yticks(locs);
+        axes[1].set_yticklabels(tick_labels);
 
+        fig.autofmt_xdate()
+
+    else:
+        # Plot time series
+        fig = plt.figure()
+        plt.plot(df['Close'])
+        plt.xlabel("Dates")
+        plt.ylabel("Price (USD)")
+        plt.title(f"{ticker} from {time_start} to {time_end}")
+        fig.autofmt_xdate()
+        
     # Storing plots
     time_s = time_start.replace('-','')
     time_e = time_end.replace('-','')
@@ -127,15 +141,22 @@ if __name__ == "__main__":
     
     python scripts/mc.py --action fetch_data --ticker TSM 
     python scripts/mc.py --action plot_ts --start 2023-01-31 --ticker LMND
-
+    python scripts/mc.py --action plot_ts --start 2023-01-31 --end 2023-05-02 --ticker CVS --no_returns_plot
     """
     
-    parser = argparse.ArgumentParser('quant-MC-methods')
+    parser = argparse.ArgumentParser('quant-MC-methods', formatter_class=RawTextHelpFormatter)
 
     # Required arguments
     parser.add_argument(
         "--action",
-        help = "%(choices)s",
+        help = 
+        """
+        fetch_data: Fetches data from yfinance API
+        plot_ts: Plots time series and histogram of returns
+        simulate: 
+        compare_times:
+        compare_stocks
+        """,
         type = str,
         choices = ['fetch_data', 'simulate', 'compare_times', 'compare_stocks', 'plot_ts'],
         required = True
@@ -143,7 +164,8 @@ if __name__ == "__main__":
     
     # Optional arguments
     parser.add_argument(
-        "--n",
+        "--num_sim", 
+        "-n",
         help = "N simulations (default: %(default)s)",
         type = int,
         required = False,
@@ -161,6 +183,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start",
         help = "Starting date of data (default: %(default)s)",
+        metavar = "START TIME",
         type = str,
         required = False,
         default = '2020-01-01'
@@ -169,6 +192,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--end",
         help = "Ending date of data (default is today: %(default)s)",
+        metavar = "END TIME",
         type = str,
         required = False,
         default = datetime.today().strftime('%Y-%m-%d')
@@ -193,14 +217,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir",
         help = "Path of output directory for plots (default: %(default)s)",
+        metavar = "PATH",
         type = str,
         required = False,
         default = 'plots'
     )
 
     parser.add_argument(
+        '--no_returns_plot',
+        help = "Do not plot returns in plot_ts (default: plots returns)",
+        required = False,
+        action = "store_true"
+    )
+
+    parser.add_argument(
         "--debug",
-        help = "run logger in DEBUG mode (default: INFO)",
+        help = "Run logger in DEBUG mode (default: INFO)",
         required = False,
         action = "store_true"
     )
