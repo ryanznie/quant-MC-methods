@@ -72,5 +72,5 @@ Version II added. It uses yfinance library from Yahoo Finance instead of Financi
 Financial Modeling Prep seems to not offer historical daily data for free anymore. I am working on a new version.
 
 ## Sources
-https://www.investopedia.com/articles/07/montecarlo.asp </br>
-https://pypi.org/project/yfinance/
+* https://www.investopedia.com/articles/07/montecarlo.asp </br>
+* https://pypi.org/project/yfinance/
