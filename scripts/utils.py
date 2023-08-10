@@ -16,5 +16,10 @@ def setup_logger(level, logger_name):
     formatter = logging.Formatter('[%(levelname)s] %(message)s')
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
-    logger.debug('LOGGER IS SET UP')   
+
+    logger.debug('LOGGER IS SET UP')  
+
     return logger
+
+
+### PUT FETCH DATA HERE?
