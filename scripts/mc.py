@@ -22,7 +22,7 @@ def monte_carlo(args):
     elif args.action == 'plot_ts':
         plot_ts(args.ticker, args.start, args.end, args.output_dir)
     elif args.action == 'simulate':
-        simulate()
+        simulate(args.ticker, args.start, args.end, args.time, args.output_dir)
     elif args.action == 'compare_times':
         compare_times()
     elif args.action == 'compare_stocks':
@@ -31,40 +31,74 @@ def monte_carlo(args):
 
 
 
-def fetch_data(ticker, time_start, time_end):
+def fetch_data(ticker, time_start, time_end, calc_mu_std=True):
     """
     Tests API connection
-    Fetches data from yfinance and calculates a return column
+    Fetches data from yfinance, calculates a return column, and returns df, mu and std by default
     """
+    # fetch data
     data = yf.Ticker(ticker)
     logger.info(f"FETCHING DATA: {ticker} from {time_start} to {time_end}")
     df = data.history(start=time_start, end=time_end, rounding=True)
     logger.debug(f"FETCHED DATA: {ticker} - df shape: {df.shape}")
     df['return'] = (df['Close'] - df['Open']) / df['Open']
     
-    print(df.head())
     if df.shape[0] == 0:
         logger.info(f"FETCH UNSUCCESSFUL - SHAPE: {df.shape}")
+        return
     else:
         logger.info(f"FETCHED SUCCESSFULLY - SHAPE: {df.shape}")
 
+    # calculate mu std
+    mu, std = ( (df.iloc[-1]['Close'] - df.iloc[0]['Close']) / df.iloc[0]['Close'] , df['return'].std() ) if calc_mu_std else (None, None)
 
-def plot_ts(ticker, time_start, time_end, output_dir):
+    if mu != None:
+        total_time = len(df)
+        logger.info(f"From {str(df.index[0])[:10]} to {str(df.index[-1])[:10]}:") # fix with regex?
+        logger.info(f"  Average return in {total_time} market days is {100*mu:.3f}%")
+        logger.info(f"  Standard deviation of returns during this time period is {std:.3f}")
+
+    return (df, (mu, std))
+
+
+def plot_ts(ticker, time_start, time_end, output_dir): # , plot_returns=True
     """
-    Plots time series of a ticker in a specific time frame
+    Fetches data and plots time series of a ticker in a specific time frame
     Stores plots in output_dir in format {ticker}_S{YYYYMMDD}E{YYYYMMDD}.png
     """
     logger.info(f"PLOTTING TICKER: {ticker} from {time_start} to {time_end}")
-    data = yf.Ticker(ticker)
-    df = data.history(start=time_start, end=time_end, rounding=True)
+    df = fetch_data(ticker, time_start, time_end, calc_mu_std=False)[0]
     logger.debug(f"FETCHED DATA: {ticker} - df shape: {df.shape}")
-    fig = plt.figure()
-    plt.plot(df['Close'])
-    plt.title(f'Time series of {ticker} from {time_start} to {time_end}')
-    plt.xlabel('Dates')
-    plt.ylabel('Price ($)')
+
+    # Creating plots
+    logger.info("")
+    logger.info(f"TICKER: {ticker}")
+    logger.info(f"Start price: ${df.iloc[0]['Close']} ({time_start})")
+    logger.info(f"End price: ${df.iloc[-1]['Close']} ({time_end})")
+    logger.info("---------------------------------------------")
+    fig, axes = plt.subplots(1, 2, figsize=(12,4))
+    plt.suptitle(f"{ticker} from {time_start} to {time_end}")
+
+    # Plot time series
+    axes[0].plot(df['Close'])
+    axes[0].set_xlabel("Dates")
+    axes[0].set_ylabel("Price (USD)")
+    axes[0].set_title(f"Time series")
     fig.autofmt_xdate()
 
+    # Plot histogram of returns
+    axes[1].hist(df['return'], bins='auto')
+    axes[1].set_xlabel("Returns")
+    axes[1].set_ylabel("Frequency")
+    axes[1].set_title("Histogram of returns")
+    
+    ## histogram density = True
+    locs = axes[1].get_yticks() 
+    tick_labels = [f"{loc/len(df['return']):.3f}" for loc in locs]
+    axes[1].set_yticks(locs);
+    axes[1].set_yticklabels(tick_labels);
+
+    # Storing plots
     time_s = time_start.replace('-','')
     time_e = time_end.replace('-','')
 
@@ -72,14 +106,27 @@ def plot_ts(ticker, time_start, time_end, output_dir):
         logger.info(f'OUTPUT DIRECTORY DOES NOT EXIST, CREATING: {output_dir}')
         os.mkdir(output_dir)
 
-    output_file = f'{output_dir}/{ticker}_S{time_s}E{time_e}'
+    output_file = f'{output_dir}/{ticker}_S{time_s}E{time_e}' # change output file path here
     logger.info(f'SAVING PLOT TO: {output_file}')
     fig.savefig(f'{output_file}')
+
+
+def simulate(ticker, time_start, time_end, time, output_dir):
+    """
+    
+    """
+    df, (mu, sigma) = fetch_data(ticker, time_start, time_end)
+    S0 = df.iloc[-1]['Close']
+    muS = mu/len(df)
+
 
 
 if __name__ == "__main__":
     """
     examples:
+    
+    python scripts/mc.py --action fetch_data --ticker TSM 
+    python scripts/mc.py --action plot_ts --start 2023-01-31 --ticker LMND
 
     """
     
@@ -101,6 +148,14 @@ if __name__ == "__main__":
         type = int,
         required = False,
         default = 5000
+    )
+
+    parser.add_argument(
+        "--time",
+        help = "Simulate n days ahead (default: %(default)s)",
+        type = int,
+        required = False,
+        default = 252
     )
 
     parser.add_argument(
