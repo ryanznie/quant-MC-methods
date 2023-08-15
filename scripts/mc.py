@@ -23,7 +23,7 @@ def monte_carlo(args):
     elif args.action == 'plot_ts':
         plot_ts(args.ticker, args.start, args.end, args.output_dir, args.no_returns_plot)
     elif args.action == 'simulate':
-        simulate(args.ticker, args.start, args.end, args.time, args.output_dir)
+        simulate(args.ticker, args.num_sim, args.start, args.end, args.time, args.output_dir)
     elif args.action == 'compare_times':
         compare_times()
     elif args.action == 'compare_stocks':
@@ -125,14 +125,65 @@ def plot_ts(ticker, time_start, time_end, output_dir, no_returns_plot):
     fig.savefig(f'{output_file}')
 
 
-def simulate(ticker, time_start, time_end, time, output_dir):
+def simulate(ticker, num_sim, time_start, time_end, time, output_dir):
     """
-    
+    Fetches data, and simulates {time} days into the future {num_sim} times using Monte Carlo methods
+    Plots and store results in {output_dir} (default: plots)
     """
+    ### PLOT ORIGINAL TS, open for people?
     df, (mu, sigma) = fetch_data(ticker, time_start, time_end)
     S0 = df.iloc[-1]['Close']
     muS = mu/len(df)
 
+    final_points = []
+
+    logger.info("")
+    logger.info("---------------------------------------------")
+    logger.info(f"Simulating {time} days into the future {num_sim} times...")
+
+    # MC simulate num_sim times
+    for sim in range(num_sim):
+        S_pos = [S0]
+        Z = np.random.normal(0,1, size = time)
+        for t in range(0, time):
+            S_pos.append(S_pos[t] + S_pos[t]*(muS + sigma*Z[t]))
+        final_points.append(S_pos[-1])
+
+    # Descriptive statistics for ending points
+    logger.info("")
+    logger.info(f"Calculating descriptive statistics...")
+    average = np.mean(final_points)
+    median = np.percentile(final_points, 50)
+    twentyfive = np.percentile(final_points, 25)
+    seventyfive = np.percentile(final_points, 75)
+
+    logger.info(f"  Average ending price: ${average:.2f}  ({(100*(average-S0)/S0):.2f}%)")
+    logger.info(f"  Median ending price: ${median:.2f}  ({(100*(median-S0)/S0):.2f}%)")
+    logger.info(f"  25th percentile of ending price: ${twentyfive:.2f}  ({(100*(twentyfive-S0)/S0):.2f}%)")
+    logger.info(f"  75th percentile of ending price: ${seventyfive:.2f}  ({(100*(seventyfive-S0)/S0):.2f}%)")
+
+    if not os.path.exists(output_dir):
+        logger.info(f'OUTPUT DIRECTORY DOES NOT EXIST, CREATING: {output_dir}')
+        os.mkdir(output_dir)
+
+    # plotting
+    fig, axes = plt.subplots(1, 2, figsize=(12,4))
+    fig.suptitle(f"{num_sim} Simulations Result: {ticker} ({time} days)", fontsize=18, y = 1)
+
+    ## plot histogram
+    axes[0].hist(final_points, bins='auto', density=False)
+    axes[0].set_xlabel("Ending Price")
+    axes[0].set_ylabel("Frequency")
+    axes[0].set_title("Histogram of future prices")
+
+    ## plot boxplot
+    sns.boxplot(data=final_points, orient="h", ax=axes[1])
+    plt.title("Boxplot of future prices")
+    plt.xlabel("Price in USD")
+    
+    output_file = f'{output_dir}/{ticker}_sim{time}D' # change output file path here
+    logger.info(f'SAVING PLOT TO: {output_file}')
+    fig.savefig(f'{output_file}')
 
 
 if __name__ == "__main__":
@@ -142,6 +193,7 @@ if __name__ == "__main__":
     python scripts/mc.py --action fetch_data --ticker TSM 
     python scripts/mc.py --action plot_ts --start 2023-01-31 --ticker LMND
     python scripts/mc.py --action plot_ts --start 2023-01-31 --end 2023-05-02 --ticker CVS --no_returns_plot
+    python scripts/mc.py --action simulate --num_sim 6000 --start 2023-01-31 --ticker PYPL --time 500
     """
     
     parser = argparse.ArgumentParser('quant-MC-methods', formatter_class=RawTextHelpFormatter)
