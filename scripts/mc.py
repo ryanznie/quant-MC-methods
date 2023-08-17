@@ -17,19 +17,20 @@ def monte_carlo(args):
     CLI tool for stock price predictions using Monte Carlo methods
     """
 
+    # For consistent naming
+    ticker = args.ticker.upper()
+    ticker2 = args.ticker2.upper()
+
     # actions
+    logger.info("")
     if args.action == 'fetch_data':
-        fetch_data(args.ticker, args.start, args.end)
+        fetch_data(ticker, args.start, args.end)
     elif args.action == 'plot_ts':
-        plot_ts(args.ticker, args.start, args.end, args.output_dir, args.no_returns_plot)
+        plot_ts(ticker, args.start, args.end, args.output_dir, args.no_returns_plot)
     elif args.action == 'simulate':
-        simulate(args.ticker, args.num_sim, args.start, args.end, args.time, args.output_dir)
-    elif args.action == 'compare_times':
-        compare_times()
+        simulate(ticker, args.num_sim, args.start, args.end, args.time, args.output_dir)
     elif args.action == 'compare_stocks':
-        compare_stocks()
-
-
+        compare_stocks(ticker, ticker2, args.num_sim, args.start, args.end, args.time, args.output_dir)
 
 
 def fetch_data(ticker, time_start, time_end, calc_mu_std=True):
@@ -37,7 +38,7 @@ def fetch_data(ticker, time_start, time_end, calc_mu_std=True):
     Tests API connection
     Fetches data from yfinance, calculates a return column, and returns df, mu and std by default
     """
-    # fetch data
+    
     data = yf.Ticker(ticker)
     logger.info(f"FETCHING DATA: {ticker} from {time_start} to {time_end}")
     df = data.history(start=time_start, end=time_end, rounding=True)
@@ -125,12 +126,12 @@ def plot_ts(ticker, time_start, time_end, output_dir, no_returns_plot):
     fig.savefig(f'{output_file}')
 
 
-def simulate(ticker, num_sim, time_start, time_end, time, output_dir):
+def simulate(ticker, num_sim, time_start, time_end, time, output_dir, plot=True):
     """
     Fetches data, and simulates {time} days into the future {num_sim} times using Monte Carlo methods
     Plots and store results in {output_dir} (default: plots)
     """
-    ### PLOT ORIGINAL TS, open for people?
+    ### PLOT ORIGINAL TS, open plot files for people?
     df, (mu, sigma) = fetch_data(ticker, time_start, time_end)
     S0 = df.iloc[-1]['Close']
     muS = mu/len(df)
@@ -139,7 +140,7 @@ def simulate(ticker, num_sim, time_start, time_end, time, output_dir):
 
     logger.info("")
     logger.info("---------------------------------------------")
-    logger.info(f"Simulating {time} days into the future {num_sim} times...")
+    logger.info(f"Simulating {ticker} {time} days into the future {num_sim} times...")
 
     # MC simulate num_sim times
     for sim in range(num_sim):
@@ -148,7 +149,13 @@ def simulate(ticker, num_sim, time_start, time_end, time, output_dir):
         for t in range(0, time):
             S_pos.append(S_pos[t] + S_pos[t]*(muS + sigma*Z[t]))
         final_points.append(S_pos[-1])
+    logger.info("Simulations completed")
 
+    # Stops plotting
+    if not plot:
+        logger.debug("Not plotting, returning final_points")
+        return final_points
+    
     # Descriptive statistics for ending points
     logger.info("")
     logger.info(f"Calculating descriptive statistics...")
@@ -186,6 +193,38 @@ def simulate(ticker, num_sim, time_start, time_end, time, output_dir):
     fig.savefig(f'{output_file}')
 
 
+def compare_stocks(ticker, ticker2, num_sim, start, end, time, output_dir):
+    """
+    Calls simulate() on two stocks and plot both histograms next to each other
+    """
+    end_points1 = simulate(ticker, num_sim, start, end, time, output_dir, plot=False)
+    end_points2 = simulate(ticker2, num_sim, start, end, time, output_dir, plot=False)
+    
+    # plotting
+    fig, axes = plt.subplots(1, 2, figsize=(12,4))
+    fig.suptitle(f"Histogram of future prices ({time} days): {ticker} vs {ticker2}", fontsize=18, y = 1)
+
+    ## plot histogram: ticker
+    axes[0].hist(end_points1, bins='auto', density=False)
+    axes[0].set_xlabel("Ending Price")
+    axes[0].set_ylabel("Frequency")
+    axes[0].set_title(f"{ticker}")
+
+    ## plot histogram: ticker2
+    axes[1].hist(end_points2, bins='auto', density=False)
+    axes[1].set_xlabel("Ending Price")
+    axes[1].set_ylabel("Frequency")
+    axes[1].set_title(f"{ticker2}")
+
+    if not os.path.exists(output_dir):
+        logger.info(f'OUTPUT DIRECTORY DOES NOT EXIST, CREATING: {output_dir}')
+        os.mkdir(output_dir)
+
+    output_file = f'{output_dir}/{ticker}_comp_{ticker2}' # change output file path here
+    logger.info(f'SAVING PLOT TO: {output_file}')
+    fig.savefig(f'{output_file}')
+
+
 if __name__ == "__main__":
     """
     examples:
@@ -194,6 +233,13 @@ if __name__ == "__main__":
     python scripts/mc.py --action plot_ts --start 2023-01-31 --ticker LMND
     python scripts/mc.py --action plot_ts --start 2023-01-31 --end 2023-05-02 --ticker CVS --no_returns_plot
     python scripts/mc.py --action simulate --num_sim 6000 --start 2023-01-31 --ticker PYPL --time 500
+    python scripts/mc.py --action simulate -n 6000 --ticker TMUS --time 500
+    python scripts/mc.py --action compare_stocks -n 6000 --ticker MA --ticker2 V
+
+    
+    ### FUTURE IMPLEMENTATIONS? 
+    action -> create plot objects -> organize() function at the end to plot
+    i.e plotting happens outside the function
     """
     
     parser = argparse.ArgumentParser('quant-MC-methods', formatter_class=RawTextHelpFormatter)
@@ -206,11 +252,10 @@ if __name__ == "__main__":
         fetch_data: Fetches data from yfinance API
         plot_ts: Plots time series and histogram of returns
         simulate: 
-        compare_times:
         compare_stocks
         """,
         type = str,
-        choices = ['fetch_data', 'simulate', 'compare_times', 'compare_stocks', 'plot_ts'],
+        choices = ['fetch_data', 'plot_ts', 'simulate', 'compare_stocks'],
         required = True
     )
     
@@ -259,7 +304,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--stock2",
+        "--ticker2",
         help = "Ticker for comparison (default: %(default)s)",
         type = str,
         required = False,
