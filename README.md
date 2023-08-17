@@ -21,10 +21,11 @@ conda activate quant-mc
 
 ### Command Line
 
-Within quant-MC-methods, 
+Within quant-MC-methods. use:
 ```
-python scripts/mc.py --action 
+python scripts/mc.py --action [action]
 ```
+The default output directory is `plots`.
 
 Here are a few examples:
 1. To plot time series: 
@@ -34,6 +35,19 @@ python scripts/mc.py --action plot_ts
 2. To fetch data and print mu and std of returns between 01-20-2020 and 03-01-2021:
 ```
 python scripts/mc.py --action fetch_data --start 2020-01-20 --end 2021-03-01
+```
+3. To run 6000 simulations 500 days into the future for PYPL, starting on 2023-01-31, use:
+```
+python scripts/mc.py --action simulate --num_sim 6000 --start 2023-01-31 --ticker PYPL --time 500
+```
+4. To run two Monte Carlo simulations and show the result histograms side by side, use:
+```
+python scripts/mc.py --action compare_stocks -n 6000 --ticker MA --ticker2 V
+```
+
+To open documentations, show a list of commands, and see default values use: 
+```
+python scripts/mc.py -h
 ```
 
 ### Notebooks
@@ -59,8 +73,8 @@ API key is from [Financial Modeling Prep](https://site.financialmodelingprep.com
 
 ## Updates:
 
-### IV.
-Working on CLI tool.
+### IV. 08/17/2023
+Version I of CLI tool completed. Supports basic functions like: `fetch_data()`, `plot_ts()`, `simulate()`, and `compare_stocks()`.
 
 ### III. 11/29/2022
 Version III added. It uses object oriented programming to allow more flexibility and code interpretation.
