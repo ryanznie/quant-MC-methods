@@ -251,8 +251,8 @@ if __name__ == "__main__":
         """
         fetch_data: Fetches data from yfinance API
         plot_ts: Plots time series and histogram of returns
-        simulate: 
-        compare_stocks
+        simulate: Runs Monte Carlo simulations for ticker with given parameters
+        compare_stocks: Runs Monte Carlo simulations for two tickers and display the result histograms side by side
         """,
         type = str,
         choices = ['fetch_data', 'plot_ts', 'simulate', 'compare_stocks'],
@@ -271,6 +271,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--time",
+        "-t",
         help = "Simulate n days ahead (default: %(default)s)",
         type = int,
         required = False,
