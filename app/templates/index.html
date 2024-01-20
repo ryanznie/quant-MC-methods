@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Prediction using Monte Carlo Methods</title>
+</head>
+<body>
+    <h1>Stock Price Prediction using Monte Carlo Methods</h1>
+
+    <form id="plotForm">
+        <label for="ticker">Enter Ticker:</label>
+        <input type="text" id="ticker" name="ticker" required>
+
+        <label for="days">Enter Number of Days (1-500):</label>
+        <input type="number" id="days" name="days" min="1" max="500" required>
+
+        <button type="button" onclick="MCsimulate()">Simulate</button>
+    </form>
+
+    <div id="plotContainer"></div>
+
+    <script>
+        function MCsimulate() {
+            // Get values from the form
+            var ticker = document.getElementById('ticker').value;
+            var days = document.getElementById('days').value;
+            // var simTime = document.getElementById('simTime').value;
+
+            // Validating inputs
+            if (!ticker || !days || isNaN(days) || days < 1 || days > 500) {
+                alert('Please enter valid values for Ticker and Number of Days (1-500).');
+                return;
+            }
+            // if (!ticker || !days || isNaN(simTime) || days < 1 || days > 500) {
+            //     alert('Please enter valid values for Ticker and Number of Days (1-500).');
+            //     return;
+            // }
+
+            // Make API call to generate and display the plot
+            fetch('/plots/' + ticker + '/' + days, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    days: days
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the generated plot
+                document.getElementById('plotContainer').innerHTML = '<img src="' + data.image_url + '" alt="Generated Plot">';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
