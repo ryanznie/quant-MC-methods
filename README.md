@@ -10,16 +10,24 @@ git clone https://github.com/ryanznie/quant-MC-methods.git
 cd quant-MC-methods
 ```
 
-**2. Install and activate environment**
-
+**2. Installation**
 ```
-conda env create -f environment.yaml
+source install.sh
+```
+After installation, activate the environment with:
+```
 conda activate quant-mc
 ```
 
-## How to use
+## Usage
 
-### Command Line
+*This project can be used in 3 ways: Web app, CLI tool, or Notebook.*
+
+### 1. Web App
+
+WORK IN PROGRESS
+
+### 2. Command Line
 
 Within `quant-MC-methods` directory, use:
 ```
@@ -51,7 +59,7 @@ python scripts/mc.py --action compare_stocks -n 6000 --ticker MA --ticker2 V
 ```
 
 
-### Notebooks
+### 3. Notebooks
 
 To run simulations, enter in ticker name and desired arguments into `simulate()`, `compare_times()`, or `compare_stocks()`. 
 Stock movements in the simulations are modeled with geometric Brownian motion equations. The parameters are extracted from historical data (Version I: 5 years if mature stock or lifetime if new stock; Version II: Defaults from '2020-01-01' to most recent market). The model follows efficient market hypothesis, and assumes that stock movements are random walks.
@@ -71,6 +79,6 @@ Version II added. It uses yfinance library from Yahoo Finance instead of Financi
 ### I. 06/17/2022
 Financial Modeling Prep seems to not offer historical daily data for free anymore. I am working on a new version.
 
-## Sources
+## References
 * https://www.investopedia.com/articles/07/montecarlo.asp </br>
 * https://pypi.org/project/yfinance/
