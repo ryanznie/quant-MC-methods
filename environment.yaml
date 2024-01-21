@@ -7,3 +7,4 @@ dependencies:
   - matplotlib==3.7.2
   - seaborn==0.12.2
   - yfinance==0.2.26
+  - Flask==3.0.0
