@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Prediction using Monte Carlo Methods</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Stock Price Prediction using Monte Carlo Methods</h1>
+    <div class="container">
+        <h1 class="mt-5">Stock Price Prediction using Monte Carlo Methods</h1>
 
-    <form id="plotForm">
-        <label for="ticker">Enter Ticker:</label>
-        <input type="text" id="ticker" name="ticker" required>
+        <form id="plotForm" class="mt-4">
+            <div class="form-group">
+                <label for="ticker">Enter Ticker:</label>
+                <input type="text" id="ticker" name="ticker" class="form-control" required>
+            </div>
 
-        <label for="days">Enter Number of Days (1-500):</label>
-        <input type="number" id="days" name="days" min="1" max="500" required>
+            <div class="form-group">
+                <label for="days">Enter Number of Days (1-500):</label>
+                <input type="number" id="days" name="days" class="form-control" min="1" max="500" required>
+            </div>
 
-        <button type="button" onclick="MCsimulate()">Simulate</button>
-    </form>
+            <button type="button" class="btn btn-primary" onclick="MCsimulate()">Simulate</button>
+        </form>
 
-    <div id="plotContainer"></div>
+        <div id="plotContainer" class="mt-5"></div>
+    </div>
 
     <script>
         function MCsimulate() {
@@ -50,8 +58,16 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display the generated plot
-                document.getElementById('plotContainer').innerHTML = '<img src="' + data.image_url + '" alt="Generated Plot">';
+                // Create an <img> element with the plot image URL
+                var plotImage = document.createElement('img');
+                plotImage.src = data.image_url;
+                plotImage.alt = 'Generated Plot';
+                plotImage.classList.add('img-fluid'); // Add Bootstrap class for responsive images
+                
+                // Clear previous content of plotContainer and append the new <img> element
+                var plotContainer = document.getElementById('plotContainer');
+                plotContainer.innerHTML = '';
+                plotContainer.appendChild(plotImage);
             })
             .catch(error => {
                 console.error('Error:', error);
