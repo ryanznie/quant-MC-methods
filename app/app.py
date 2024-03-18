@@ -33,7 +33,7 @@ def get_plots(ticker, days):
     
     final_points, num_sim = simulate(data, days, ticker) # return image path too
 
-    # create a static dir if it odes not already exist
+    # create a static dir if it does not already exist
     if not os.path.exists('static'):
         logger.info('OUTPUT DIRECTORY DOES NOT EXIST, CREATING: static')
         os.mkdir('static')
