@@ -37,6 +37,7 @@ def simulate(data, time, ticker, num_sim=100):
     MC simulates {time} days into the future {num_sim} times using Monte Carlo methods
     Plots and store results in {output_dir} (default: static)
     """
+    time = int(time)
     df = data[0]
     mu, sigma = data[1]
 
@@ -52,7 +53,7 @@ def simulate(data, time, ticker, num_sim=100):
     # MC simulate num_sim times
     for sim in range(num_sim):
         S_pos = [S0]
-        Z = np.random.normal(0,1, size = time)
+        Z = np.random.normal(0,1, time)
         for t in range(0, time):
             S_pos.append(S_pos[t] + S_pos[t]*(muS + sigma*Z[t]))
         final_points.append(S_pos[-1])
