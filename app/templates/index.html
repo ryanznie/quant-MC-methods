@@ -33,17 +33,19 @@
             // Get values from the form
             var ticker = document.getElementById('ticker').value;
             var days = document.getElementById('days').value;
-            // var simTime = document.getElementById('simTime').value;
 
             // Validating inputs
             if (!ticker || !days || isNaN(days) || days < 1 || days > 500) {
-                alert('Please enter valid values for Ticker and Number of Days (1-500).');
+                var errorMessage = "";
+                if (!ticker) {
+                    errorMessage += "Please enter a valid ticker symbol.\n";
+                }
+                if (isNaN(days) || days < 1 || days > 500) {
+                    errorMessage += "Please enter a valid number of days (1-500).\n";
+                }
+                alert(errorMessage);
                 return;
             }
-            // if (!ticker || !days || isNaN(simTime) || days < 1 || days > 500) {
-            //     alert('Please enter valid values for Ticker and Number of Days (1-500).');
-            //     return;
-            // }
 
             // Make API call to generate and display the plot
             fetch('/plots/' + ticker + '/' + days, {
@@ -56,14 +58,21 @@
                     days: days
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 404) {
+                    alert('Ticker not found. Please enter a valid ticker symbol.');
+                    return;
+                }
+                return response.json();
+            })
             .then(data => {
+                if (!data) return;  // No need to proceed if data is null
                 // Create an <img> element with the plot image URL
                 var plotImage = document.createElement('img');
                 plotImage.src = data.image_url;
                 plotImage.alt = 'Generated Plot';
                 plotImage.classList.add('img-fluid'); // Add Bootstrap class for responsive images
-                
+                            
                 // Clear previous content of plotContainer and append the new <img> element
                 var plotContainer = document.getElementById('plotContainer');
                 plotContainer.innerHTML = '';

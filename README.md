@@ -4,13 +4,13 @@ Stock price predictions using Monte Carlo methods
 
 ## Set Up
 **1. Clone repository**
-
 ```
 git clone https://github.com/ryanznie/quant-MC-methods.git
 cd quant-MC-methods
 ```
 
 **2. Installation**
+First, run the following command to install the necessary dependencies:
 ```
 source install.sh
 ```
@@ -25,7 +25,12 @@ conda activate quant-mc
 
 ### 1. Web App
 
-WORK IN PROGRESS
+Run the web app on your local machine.
+```
+cd app
+python app.py
+```
+Then visit the locally running flask website at: http://127.0.0.1:5000
 
 ### 2. Command Line
 

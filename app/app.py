@@ -29,7 +29,7 @@ def get_plots(ticker, days):
     
     data = fetch_data(ticker, time_start='2020-01-01', time_end='2020-12-31')
     if data is None:
-        return jsonify({'error': 'Ticker cannot be found on yFinance'}), 400
+        return jsonify({'error': 'Ticker cannot be found on yFinance'}), 404
     
     final_points, num_sim = simulate(data, days, ticker) # return image path too
     
