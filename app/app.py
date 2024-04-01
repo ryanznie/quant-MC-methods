@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('agg')
 import os
+from matplotlib.table import Table
 
 app = Flask(__name__)
 
@@ -65,20 +66,53 @@ def get_plots(ticker, days):
     axes[1, 0].set_xlabel("Date")
     axes[1, 0].set_ylabel("Price")
     axes[1, 0].legend()
+    axes[1, 0].tick_params(axis='x', rotation=45)
 
     # Table with relevant stock data
-    axes[1, 1].axis('off')  # Disable axis for table
     table_data = [
+        ['Attribute', 'Value'],
         ['Open', df.iloc[-1]['Open']], 
         ['Close', df.iloc[-1]['Close']], 
-        ['High', df.iloc[-1]['High']], 
-        ['Low', df.iloc[-1]['Low']], 
+        ['5Y High (on {})'.format(df['High'].idxmax().strftime('%Y-%m-%d')), df.iloc[-1]['High']],
+        ['5Y Low (on {})'.format(df['Low'].idxmin().strftime('%Y-%m-%d')), df.iloc[-1]['Low']],
         ['Volume', df.iloc[-1]['Volume']],
         ['Previous Close', df.iloc[-2]['Close']],
         ['52 Week High', df['High'].max()],
         ['52 Week Low', df['Low'].min()],
     ]
-    axes[1, 1].table(cellText=table_data, loc='center')
+
+    # Table data
+    table_data = [
+        ['Attribute', 'Value'],
+        ['Open', df.iloc[-1]['Open']], 
+        ['Close', df.iloc[-1]['Close']], 
+        ['5Y High (on {})'.format(df['High'].idxmax().strftime('%Y-%m-%d')), df.iloc[-1]['High']],
+        ['5Y Low (on {})'.format(df['Low'].idxmin().strftime('%Y-%m-%d')), df.iloc[-1]['Low']],
+        ['Volume', df.iloc[-1]['Volume']],
+        ['Previous Close', df.iloc[-2]['Close']],
+        ['52 Week High', df['High'].max()],
+        ['52 Week Low', df['Low'].min()],
+    ]
+
+    # Create a matplotlib table
+    table = Table(axes[1, 1], loc='center')
+
+    # Table styling
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+
+    # Add cells
+    for i, row in enumerate(table_data):
+        for j, val in enumerate(row):
+            table.add_cell(i, j, width=0.5, height=0.3, text=val, loc='center')
+
+    # Hide axes
+    axes[1, 1].axis('off')
+
+    # Add the table to the plot
+    table.auto_set_column_width([0, 1])
+    table.scale(.5, .5)  # Adjust the scale as needed to fit the table within the plot
+    axes[1, 1].add_table(table)
 
     plot_url = 'static/{}_sim{}D.png'.format(ticker, days)  # Add .png extension
     logger.info('SAVING PLOT TO: {}'.format(plot_url))

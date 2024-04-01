@@ -58,7 +58,7 @@
             if (!ticker || !days || isNaN(days) || days < 1 || days > 500) {
                 var errorMessage = "";
                 if (!ticker) {
-                    errorMessage += "Please enter a valid ticker symbol.\n";
+                    errorMessage += "Please enter a valid ticker symbol (e.g. AAPL).\n";
                 }
                 if (isNaN(days) || days < 1 || days > 500) {
                     errorMessage += "Please enter a valid number of days (1-500).\n";
