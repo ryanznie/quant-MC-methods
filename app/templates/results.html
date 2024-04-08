@@ -1,0 +1,10 @@
+{% extends 'formbase.html' %}
+
+{% block title %}Results - {{ super() }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="mt-4">Results</h2>
+        <img src='data:image/png;base64,{{ data }}' class="img-fluid mt-4"/>
+    </div>
+{% endblock %}

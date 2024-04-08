@@ -1,0 +1,12 @@
+{% extends 'mlbase.html' %}
+
+{% block title %}Results - {{ super() }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- show graphs and feature importance here: -->
+        <h2 class="mt-4">Results</h2>
+        <h3 class="mt-4">Accuracy: {{accuracy}} | Count: {{count}}</h3>
+        <img src='data:image/png;base64,{{ imgdata }}' class="img-fluid mt-4"/>
+    </div>
+{% endblock %}
