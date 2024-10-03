@@ -9,36 +9,35 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">Stock Prediction</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about">About</a>
-                    </li>
-                </ul>
-            </div>
+        <a class="navbar-brand" href="{{ url_for('index') }}">QI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('statarb') }}">Stat Arb</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('machinelearning') }}">ML</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('montecarlo') }}">Monte Carlo</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('about') }}">About</a>
+            </li>
+            </ul>
         </div>
     </nav>
     <div class="container">
-        <h1 class="mt-5">About Stock Price Prediction using Monte Carlo Methods</h1>
-        
-        <p>This website allows you to predict future stock prices using Monte Carlo simulation methods.</p>
-        
-        <h2>How to Use</h2>
-        <p>To use this website, enter a valid stock ticker symbol and the number of days you want to predict into the form on the homepage. Click the "Simulate" button, and the website will generate a prediction plot and display relevant stock data.</p>
-        
-        <h2>What is Monte Carlo Simulation?</h2>
-        <p>Monte Carlo simulation is a computational technique used to approximate the probability of certain outcomes by running multiple simulations with random variables. In the context of stock price prediction, Monte Carlo simulation can be used to generate possible future price scenarios based on historical data and statistical models.</p>
-        
-        <h2>About Us</h2>
-        <p>This website was originally created by Ryan Nie.</p>
+        <h1 class="mt-4">About Us</h1>
+        <p class="mt-4">This website was originally created by Ryan Nie. It was then modified by Jason Huang. Additional features and functionality were added by including the work done by Ryan Gilbert. The platform is designed to display the work done by Quant Seniors at BU Alpha.</p>
+        <p class="mt-4">The website is managed by BU Alpha, a subdivision of BU Finance & Investment Club, a student organization at Boston University dedicated to promoting financial literacy and fostering a community of aspiring finance professionals.</p>
+        <p class="mt-4">Our long-term goal is to simplify complex financial concepts and empower individuals to make informed decisions in the financial markets. We aim to help users enhance their trading strategies and optimize their investment portfolios.</p>
     </div>
 </body>
 </html>

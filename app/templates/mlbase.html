@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Arbitrage Trading</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"></head>
+    <style>p {font-size: 18px;}</style>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('index') }}">QI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('statarb') }}">Stat Arb</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('machinelearning') }}">ML</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('montecarlo') }}">Monte Carlo</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('about') }}">About</a>
+            </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container" style="padding-right:3%;">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <br>
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        
+        {% endwith %}
+    </div>
+    
+    <div class="container">
+        <h1 class="mt-4">Machine Learning Trading</h1>
+        <form action="/mlresults" method="post" class="mt-4">
+            <h1 class="mt-4">Asset Data</h1>
+            <div class="form-group">
+                <label for="equity1">Equity:</label>
+                <input type="text" id="equity1" name="equity1" value="{{ results.equity1 | default('SPY') }}" class="form-control" required>
+                <p class="constraint-description">This is the equity symbol to be analyzed. Example: SPY, AAPL, MSFT.</p><br>
+            </div>
+
+            <div class="form-group">
+                <label for="timeframe">Timeframe:</label>
+                <select id="timeframe" name="timeframe" class="form-control" onchange="tftoperiod()" required>
+                    <option value="1h" {% if results.timeframe == '1h' %} selected {% endif %}>1 Hour</option>
+                    <option value="1d" {% if results.timeframe == '1d' %} selected {% endif %}>1 Day</option>
+                    <option value="1wk" {% if results.timeframe == '1wk' %} selected {% endif %}>1 Week</option>
+                </select>
+                <p class="constraint-description">This is the granularity of historical data retrieved.</p><br>
+            </div>
+            <div class="form-group">
+                <label for="period">Period:</label>
+                <select id="period" name="period" class="form-control" required>
+                    <option value="1d" {% if results.period == '1d' %} selected {% endif %}>1 Day</option>
+                    <option value="5d" {% if results.period == '5d' %} selected {% endif %}>5 Days</option>
+                    <option value="1mo" {% if results.period == '1mo' %} selected {% endif %}>1 Month</option>
+                    <option value="3mo" {% if results.period == '3mo' %} selected {% endif %}>3 Months</option>
+                    <option value="6mo" {% if results.period == '6mo' %} selected {% endif %}>6 Months</option>
+                    <option value="1y" {% if results.period == '1y' %} selected {% else %} selected {% endif %}>1 Year</option>
+                    <option value="2y" {% if results.period == '2y' %} selected {% endif %}>2 Years</option>
+                    <option value="5y" {% if results.period == '5y' %} selected {% endif %}>5 Years</option>
+                    <option value="10y" {% if results.period == '10y' %} selected {% endif %}>10 Years</option>
+                    <option value="ytd" {% if results.period == 'ytd' %} selected {% endif %}>YTD</option>
+                    <option value="max" {% if results.period == 'max' %} selected {% endif %}>Max</option>
+                </select>
+                <p class="constraint-description">How far back to fetch data.</p><br>
+            </div>
+            
+            <h1 class="mt-4">Machine Learning Parameters</h1>
+            <!-- slider for random forest estimators -->
+            <div class="form-group">
+                <label for="estimators" id="estimatorsLabel">Random Forest Estimators:</label>
+                <input type="range" id="estimators" name="estimators" min="1" max="100" value="{{ results.estimators | default('100') }}" class="form-control" required>
+                <p class="constraint-description">Number of estimators for the Random Forest.</p><br>
+            </div>
+            <!-- multi select with options: RSI, MACD, % from 100MA, Prev. Return -->
+            <div class="form-group">
+                <label for="features">Features:</label>
+                <select id="features" name="features" class="form-control selectpicker" multiple required>
+                    <option value="rsi" {% if 'rsi' in results.features %} selected {% endif %}>RSI</option>
+                    <option value="macd" {% if 'macd' in results.features %} selected {% endif %}>MACD</option>
+                    <option value="pctfrom100ma" {% if 'pctfrom100ma' in results.features %} selected {% endif %}>% from 100MA</option>
+                    <option value="prevreturn" {% if 'prevreturn' in results.features %} selected {% endif %}>Prev. Return</option>
+                </select>
+                <p class="constraint-description">Features to use for the Random Forest. Select multiple.</p><br>
+            </div>
+
+
+            <!-- range(0, 10) input for shifting features-->
+            <!-- updates the label element to say Shift: {value} when it changes to display current value -->
+            <div class="form-group">
+                <label for="shift" id="shiftLabel">Shift:</label>
+                <input type="range" id="shift" name="shift" min="1" max="10" value="{{ results.shift | default('1') }}" class="form-control" required>
+                <p class="constraint-description">Creates new features by getting the other features for this amount of intervals ago. May provide the model with valuable information.</p><br>
+            </div>
+
+            <h1 class="mt-4">Strategy Threshold</h1>
+            <!-- Threshold from 0 to 1 with step 0.01-->
+            <div class="form-group">
+                <label for="threshold" id="thresholdLabel">Threshold:</label>
+                <input type="range" id="threshold" name="threshold" min="0" max="1" step="0.01" value="{{ results.threshold | default('0.5') }}" class="form-control" required>
+                <p class="constraint-description">By predicting a range from 0 to 1, we can filter for stronger predictions to get a higher prediction of winning.</p><br>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <p class="mt-4">This strategy makes a prediction about whether or not the next hour/day/week will have a positive(1) or negative gain(0). By predicting a range from 0 to 1, we can filter for stronger predictions to get a higher prediction of winning. Note the data split. This is an important part of machine learning, as we must validate the model's prediction accuracy.</p><br>
+    </div>
+    
+
+    <main>
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function tftoperiod() {
+            var tf = document.getElementById("timeframe").value;
+            var period = document.getElementById("period");
+            if (tf == "1h") {
+                period.value = "1y";
+            } else if (tf == "1d") {
+                period.value = "5y";
+            } else if (tf == "1wk") {
+                period.value = "max";
+            }
+        }
+
+        var estimators = document.getElementById("estimators");
+        var estimatorsLabel = document.getElementById("estimatorsLabel");
+        estimators.oninput = function() {
+            estimatorsLabel.innerHTML = "Random Forest Estimators: " + estimators.value;
+        }
+
+        var shift = document.getElementById("shift");
+        var shiftLabel = document.getElementById("shiftLabel");
+        shift.oninput = function() {
+            shiftLabel.innerHTML = "Shift: " + shift.value;
+        }
+
+        var threshold = document.getElementById("threshold");
+        var thresholdLabel = document.getElementById("thresholdLabel");
+        threshold.oninput = function() {
+            thresholdLabel.innerHTML = "Threshold: " + threshold.value;
+        }
+                
+        // onload set the labels to the current value
+        estimatorsLabel.innerHTML = "Random Forest Estimators: " + estimators.value;
+        shiftLabel.innerHTML = "Shift: " + shift.value;
+        thresholdLabel.innerHTML = "Threshold: " + threshold.value;
+
+        
+    </script>
+</body>
+</html>
